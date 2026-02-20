@@ -1,0 +1,274 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  cursor: crosshair;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ─── Title ──────────────────────────────────── */
+
+#title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#title span {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 72px;
+  font-weight: 100;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.8);
+  animation: fadeTitle 4.5s ease-in-out forwards;
+}
+
+@keyframes fadeTitle {
+  0% { opacity: 0; transform: scale(0.95); }
+  15% { opacity: 0.85; transform: scale(1); }
+  65% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+#mode-label {
+  position: absolute;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* ─── Sound Toggle ───────────────────────────── */
+
+#sound-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 0.3s, background 0.3s, border-color 0.3s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+#sound-toggle:hover {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#sound-toggle.active {
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Bottom Controls ────────────────────────── */
+
+#controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+/* ─── Color Picker ───────────────────────────── */
+
+#color-picker {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.swatch {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch:hover .swatch-dot {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.15);
+}
+
+.swatch.active .swatch-dot {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+.auto-dot {
+  background: conic-gradient(from 0deg, #f66, #ff0, #0f0, #0ff, #00f, #f0f, #f66);
+}
+
+.custom-dot {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.swatch.active .custom-dot {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+#custom-color {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─── Mode Buttons ───────────────────────────── */
+
+#mode-buttons {
+  display: flex;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 4px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.mode-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  padding: 7px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: color 0.3s, background 0.3s;
+  white-space: nowrap;
+}
+
+.mode-btn:hover {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.mode-btn.active {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Descriptions & Hint ────────────────────── */
+
+#mode-desc {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.35);
+  transition: opacity 0.4s;
+  min-height: 1.2em;
+  text-align: center;
+}
+
+#hint {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.28);
+  white-space: nowrap;
+  transition: opacity 3s ease;
+}
+
+/* ─── Mobile ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+  #title span {
+    font-size: 40px;
+  }
+
+  .mode-btn {
+    font-size: 10px;
+    padding: 6px 10px;
+    letter-spacing: 0.08em;
+  }
+
+  #mode-desc, #hint {
+    font-size: 10px;
+  }
+
+  .swatch-dot {
+    width: 16px;
+    height: 16px;
+  }
+
+  #color-picker {
+    gap: 5px;
+  }
+
+  #sound-toggle {
+    width: 36px;
+    height: 36px;
+  }
+}

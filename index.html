@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>void</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="ui">
+    <div id="title"><span>void</span></div>
+    <div id="mode-label"></div>
+
+    <button id="sound-toggle" title="Toggle ambient sound">
+      <svg id="sound-off-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+        <line x1="23" y1="9" x2="17" y2="15"/>
+        <line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+      <svg id="sound-on-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+        <path d="M15.54 8.46a5 5 0 010 7.07"/>
+        <path d="M19.07 4.93a10 10 0 010 14.14"/>
+      </svg>
+    </button>
+
+    <div id="controls">
+      <div id="color-picker">
+        <button class="swatch active" data-color="auto" title="Auto">
+          <span class="swatch-dot auto-dot"></span>
+        </button>
+        <button class="swatch" data-hue="0.0" title="Rose">
+          <span class="swatch-dot" style="background:#ff4466"></span>
+        </button>
+        <button class="swatch" data-hue="0.08" title="Amber">
+          <span class="swatch-dot" style="background:#ee8833"></span>
+        </button>
+        <button class="swatch" data-hue="0.14" title="Gold">
+          <span class="swatch-dot" style="background:#ddaa22"></span>
+        </button>
+        <button class="swatch" data-hue="0.4" title="Emerald">
+          <span class="swatch-dot" style="background:#33bb66"></span>
+        </button>
+        <button class="swatch" data-hue="0.55" title="Azure">
+          <span class="swatch-dot" style="background:#3388ff"></span>
+        </button>
+        <button class="swatch" data-hue="0.75" title="Violet">
+          <span class="swatch-dot" style="background:#9944ff"></span>
+        </button>
+        <label class="swatch" title="Custom color">
+          <span class="swatch-dot custom-dot">+</span>
+          <input type="color" id="custom-color" value="#ffffff">
+        </label>
+      </div>
+      <div id="mode-buttons">
+        <button class="mode-btn active" data-mode="4">void</button>
+        <button class="mode-btn" data-mode="0">nebula</button>
+        <button class="mode-btn" data-mode="1">solar</button>
+        <button class="mode-btn" data-mode="2">aurora</button>
+        <button class="mode-btn" data-mode="3">vortex</button>
+      </div>
+      <div id="mode-desc">silence between the stars</div>
+      <div id="hint">click & drag to attract · shift+click to repel · scroll to zoom</div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
