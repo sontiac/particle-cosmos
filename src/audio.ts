@@ -13,6 +13,7 @@ const MODE_FREQS: number[][] = [
 export class AmbientSound {
   private ctx: AudioContext | null = null;
   private master!: GainNode;
+  private sfxGain!: GainNode;
   private filter!: BiquadFilterNode;
   private drones: OscillatorNode[] = [];
   private currentMode = 4;
@@ -33,10 +34,9 @@ export class AmbientSound {
     }
 
     this._enabled = !this._enabled;
-    this.master.gain.linearRampToValueAtTime(
-      this._enabled ? 0.08 : 0,
-      this.ctx.currentTime + 0.5
-    );
+    const t = this.ctx.currentTime + 0.5;
+    this.master.gain.linearRampToValueAtTime(this._enabled ? 0.08 : 0, t);
+    this.sfxGain.gain.linearRampToValueAtTime(this._enabled ? 0.5 : 0, t);
     return this._enabled;
   }
 
@@ -44,9 +44,14 @@ export class AmbientSound {
     this.ctx = new AudioContext();
     const ctx = this.ctx;
 
-    // Master gain
+    // Master gain (for continuous drone — kept low)
     this.master = ctx.createGain();
     this.master.gain.value = 0.08;
+
+    // Separate SFX gain (for one-shot sounds — much louder)
+    this.sfxGain = ctx.createGain();
+    this.sfxGain.gain.value = 0.5;
+    this.sfxGain.connect(ctx.destination);
 
     // Warm lowpass filter
     this.filter = ctx.createBiquadFilter();
@@ -132,30 +137,79 @@ export class AmbientSound {
     this.triggerSweep();
   }
 
-  /** Crystalline chime on click interactions */
+  /** Percussive impact — low thump + noise whoosh to match particle explosion */
   triggerBurst() {
     if (!this.ctx || !this._enabled) return;
     const ctx = this.ctx;
     const now = ctx.currentTime;
 
-    const base = 500 + Math.random() * 700;
-    const multiples = [1, 1.5, 2, 3];
+    // Low-frequency thump (the "boom")
+    const thump = ctx.createOscillator();
+    thump.type = 'sine';
+    thump.frequency.setValueAtTime(70 + Math.random() * 30, now);
+    thump.frequency.exponentialRampToValueAtTime(25, now + 0.18);
 
-    for (let i = 0; i < multiples.length; i++) {
+    const thumpGain = ctx.createGain();
+    thumpGain.gain.setValueAtTime(0.12, now);
+    thumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+    thump.connect(thumpGain);
+    thumpGain.connect(this.sfxGain);
+    thump.start(now);
+    thump.stop(now + 0.25);
+
+    // Filtered noise burst (the "whoosh" of particles scattering)
+    const bufLen = Math.floor(ctx.sampleRate * 0.35);
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+
+    const noiseFilt = ctx.createBiquadFilter();
+    noiseFilt.type = 'lowpass';
+    noiseFilt.frequency.setValueAtTime(2500, now);
+    noiseFilt.frequency.exponentialRampToValueAtTime(150, now + 0.25);
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.12, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+
+    noise.connect(noiseFilt);
+    noiseFilt.connect(noiseGain);
+    noiseGain.connect(this.sfxGain);
+    noise.start(now);
+    noise.stop(now + 0.35);
+  }
+
+  /** Soft rising tone on color change */
+  triggerColorChange() {
+    if (!this.ctx || !this._enabled) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+
+    const base = 600 + Math.random() * 200;
+
+    // Two quick rising notes
+    [0, 0.06].forEach((delay, i) => {
       const osc = ctx.createOscillator();
       osc.type = 'sine';
-      osc.frequency.value = base * multiples[i];
+      const freq = base * (1 + i * 0.25);
+      osc.frequency.setValueAtTime(freq * 0.9, now + delay);
+      osc.frequency.linearRampToValueAtTime(freq, now + delay + 0.08);
 
       const g = ctx.createGain();
-      const vol = 0.025 / (i + 1);
-      g.gain.setValueAtTime(vol, now);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.25 + i * 0.04);
+      g.gain.setValueAtTime(0.1, now + delay);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.18);
 
       osc.connect(g);
-      g.connect(this.master);
-      osc.start(now);
-      osc.stop(now + 0.4);
-    }
+      g.connect(this.sfxGain);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.2);
+    });
   }
 
   /** Descending whoosh on mode change */
@@ -186,7 +240,7 @@ export class AmbientSound {
 
     src.connect(bp);
     bp.connect(g);
-    g.connect(this.master);
+    g.connect(this.sfxGain);
     src.start(now);
     src.stop(now + 0.7);
   }

@@ -314,8 +314,8 @@ const modeButtons = document.querySelectorAll<HTMLButtonElement>('.mode-btn');
 const modeDescEl = document.getElementById('mode-desc')!;
 
 function updateModeUI(index: number) {
-  modeButtons.forEach((btn, i) => {
-    btn.classList.toggle('active', i === index);
+  modeButtons.forEach((btn) => {
+    btn.classList.toggle('active', parseInt(btn.dataset.mode!, 10) === index);
   });
   modeDescEl.textContent = MODES[index].desc;
 }
@@ -350,6 +350,7 @@ function triggerColorTransition() {
     modeBlend = 0.5;
     targetMode = currentMode;
   }
+  audio.triggerColorChange();
 }
 
 function setActiveColor(el: HTMLElement) {
@@ -394,11 +395,38 @@ const soundToggle = document.getElementById('sound-toggle')!;
 const soundOnIcon = document.getElementById('sound-on-icon')!;
 const soundOffIcon = document.getElementById('sound-off-icon')!;
 
-soundToggle.addEventListener('click', () => {
-  const on = audio.toggle();
+// Sound is desired on by default — show toggle as active
+let soundDesired = true;
+soundToggle.classList.add('active');
+soundOnIcon.style.display = 'block';
+soundOffIcon.style.display = 'none';
+
+function updateSoundUI(on: boolean) {
+  soundDesired = on;
   soundToggle.classList.toggle('active', on);
   soundOnIcon.style.display = on ? 'block' : 'none';
   soundOffIcon.style.display = on ? 'none' : 'block';
+}
+
+// AudioContext requires user gesture — auto-start on first canvas interaction
+function ensureAudio() {
+  if (!audio.enabled && soundDesired) {
+    audio.toggle();
+  }
+}
+
+soundToggle.addEventListener('click', () => {
+  if (!audio.enabled && soundDesired) {
+    // Shown as on but not yet init'd — user wants to turn off before first interaction
+    updateSoundUI(false);
+  } else if (!audio.enabled && !soundDesired) {
+    // Shown as off, user wants to turn on — init now (this IS a user gesture)
+    audio.toggle();
+    updateSoundUI(true);
+  } else {
+    // Already running, normal toggle
+    updateSoundUI(audio.toggle());
+  }
 });
 
 // ─── Physics ──────────────────────────────────────────────
@@ -575,6 +603,7 @@ canvas.addEventListener('mouseenter', () => { mouseActive = true; });
 canvas.addEventListener('mouseleave', () => { mouseActive = false; });
 
 canvas.addEventListener('mousedown', (e) => {
+  ensureAudio();
   mouseDown = true;
   if (e.button === 2 || e.shiftKey) repelling = true;
   if (mouseActive) burstAt(mouseWorld.x, mouseWorld.y, repelling);
@@ -587,6 +616,7 @@ canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // Touch
 canvas.addEventListener('touchstart', (e) => {
+  ensureAudio();
   e.preventDefault();
   mouseDown = true;
   mouseActive = true;
